@@ -60,4 +60,22 @@ async def get_file(filename: str):
     if os.path.exists(file_path):
         result = response(200, SUCCESS_CODE, "Successfuly Get File", file_path)
         return result
-    return response(500, FAILES_CODE, "File Not Found", str(e))
+    return response(404, FAILES_CODE, "File Not Found", "")
+
+
+@app.get("/download/{filename}")
+async def download_file(filename: str):
+    # Construct the file path
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    
+    # Check if the file exists
+    if not os.path.exists(file_path):
+        raise response(404, FAILES_CODE, "File Not Found", "")
+    
+    # Return the file as a response for download
+    return FileResponse(
+        path=file_path,
+        media_type='application/octet-stream',  # Generic file type for download
+        filename=filename  # Suggested filename for download
+    )
+
