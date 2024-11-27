@@ -1,5 +1,6 @@
 import os
 from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi.responses import FileResponse
 from PIL import Image
 from .utils import encode_text_into_image, decode_text_from_image
 from .models import *
