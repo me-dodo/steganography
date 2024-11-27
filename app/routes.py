@@ -53,3 +53,11 @@ async def decode_text_from_image_route(image_file: UploadFile = File(...)):
       return result
    except Exception as e:
       raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/get_file/{filename}")
+async def get_file(filename: str):
+    file_path = os.path.join(UPLOAD_FOLDER, filename)
+    if os.path.exists(file_path):
+        result = response(200, SUCCESS_CODE, "Successfuly Get File", file_path)
+        return result
+    return response(500, FAILES_CODE, "File Not Found", str(e))
