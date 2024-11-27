@@ -63,7 +63,7 @@ async def get_file(filename: str):
     return response(404, FAILES_CODE, "File Not Found", "")
 
 
-@app.get("/download/{filename}")
+@router.get("/download/{filename}")
 async def download_file(filename: str):
     # Construct the file path
     file_path = os.path.join(UPLOAD_FOLDER, filename)
