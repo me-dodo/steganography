@@ -37,7 +37,7 @@ async def encode_text_in_image_route(
        valid_image_formats = {"jpeg", "jpg", "png", "bmp", "gif"}
        file_extension = image_file.filename.split(".")[-1].lower()
        if file_extension not in valid_image_formats:
-           raise HTTPException(status_code=400, detail="Format file tidak didukung. Silahkan upload file dengan format jpeg, jpg, png, bmp, atau gif.")
+           raise HTTPException("Format file tidak didukung. Silahkan upload file dengan format jpeg, jpg, png, bmp, atau gif.")
     
        # Save the uploaded image file to UPLOAD_FOLDER
        image_path = os.path.join(UPLOAD_FOLDER, image_file.filename)
@@ -57,7 +57,7 @@ async def encode_text_in_image_route(
        result = response(200, SUCCESS_CODE, "Successfuly Encode Image", data_result)
        return result
    except Exception as e:
-      result = response(500, FAILES_CODE, "Failed Encode Image", str(e))
+      result = response(500, FAILED_CODE, "Failed Encode Image", str(e))
       return result
 
 
@@ -74,15 +74,16 @@ async def decode_text_from_image_route(image_file: UploadFile = File(...)):
       result = response(200, SUCCESS_CODE, "Successfuly Decode Image", data_result)
       return result
    except Exception as e:
-      raise HTTPException(status_code=500, detail=str(e))
-
+      result = response(500, FAILED_CODE, "Failed Decode Image", str(e))
+      return result
+       
 @router.get("/get_file/{filename}")
 async def get_file(filename: str):
     file_path = os.path.join(UPLOAD_FOLDER, filename)
     if os.path.exists(file_path):
         result = response(200, SUCCESS_CODE, "Successfuly Get File", file_path)
         return result
-    return response(404, FAILES_CODE, "File Not Found", "")
+    return response(404, FAILED_CODE, "File Not Found", "")
 
 
 @router.get("/download/{filename}")
@@ -92,7 +93,7 @@ async def download_file(filename: str):
     
     # Check if the file exists
     if not os.path.exists(file_path):
-        raise response(404, FAILES_CODE, "File Not Found", "")
+        raise response(404, FAILED_CODE, "File Not Found", "")
     
     # Return the file as a response for download
     return FileResponse(
