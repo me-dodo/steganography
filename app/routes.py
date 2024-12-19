@@ -30,24 +30,32 @@ async def encode_text_in_image_route(
     image_file: UploadFile = File(...)
 ):
    try:
-      # Ensure the upload folder exists
-      os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-        
-      # Save the uploaded image file to UPLOAD_FOLDER
-      image_path = os.path.join(UPLOAD_FOLDER, image_file.filename)
-      with open(image_path, "wb") as f:
-         f.write(await image_file.read())
+       # Ensure the upload folder exists
+       os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+       
+       # Validate that the file is an image
+       valid_image_formats = {"jpeg", "jpg", "png", "bmp", "gif"}
+       file_extension = image_file.filename.split(".")[-1].lower()
+       if file_extension not in valid_image_formats:
+           raise HTTPException(status_code=400, detail="Format file tidak didukung. Silahkan upload file dengan format jpeg, jpg, png, bmp, atau gif.")
+    
+       # Save the uploaded image file to UPLOAD_FOLDER
+       image_path = os.path.join(UPLOAD_FOLDER, image_file.filename)
+       with open(image_path, "wb") as f:
+           f.write(await image_file.read())
 
-      # Encode text into the image
-      encoded_image = encode_text_into_image(image_path, text)
-        
-      # Save the encoded image as PNG
-      encoded_image_path = os.path.join(UPLOAD_FOLDER, f"encoded_{image_file.filename}")
-      encoded_image.save(encoded_image_path, format='PNG', optimize=True)
-
-      data_result = EncodeResponse(imagePath=encoded_image_path)
-      result = response(200, SUCCESS_CODE, "Successfuly Encode Image", data_result)
-      return result
+       # Encode text into the image
+       encoded_image = encode_text_into_image(image_path, text)
+       
+       # Save the encoded image without changing its format
+       encoded_image_path = os.path.join(UPLOAD_FOLDER, f"encoded_{image_file.filename}")
+       encoded_image.save(encoded_image_path, format=encoded_image.format, optimize=True)
+       
+       # Prepare the response
+       data_result = EncodeResponse(imagePath=encoded_image_path)
+       
+       result = response(200, SUCCESS_CODE, "Successfuly Encode Image", data_result)
+       return result
    except Exception as e:
       result = response(500, FAILES_CODE, "Failed Encode Image", str(e))
       return result
