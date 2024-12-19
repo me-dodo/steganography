@@ -1,6 +1,7 @@
 import os
-from fastapi import APIRouter, UploadFile, File, Form, HTTPException
+from fastapi import FastAPI, APIRouter, UploadFile, File, Form, HTTPException
 from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 from .utils import encode_text_into_image, decode_text_from_image
 from .models import *
@@ -10,6 +11,18 @@ import io
 
 UPLOAD_FOLDER = "uploaded_images"
 router = APIRouter()
+
+# Create FastAPI app instance
+app = FastAPI()
+
+# Add CORS middleware
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @router.post("/encode")
 async def encode_text_in_image_route(
@@ -80,3 +93,5 @@ async def download_file(filename: str):
         filename=filename  # Suggested filename for download
     )
 
+# Add the router to the app
+app.include_router(router)
