@@ -35,11 +35,18 @@ async def encode_text_in_image_route(
         encoded_image = encode_text_into_image(image_path, text)
 
         # Save the encoded image without changing its format
-        encoded_image_path = os.path.join(UPLOAD_FOLDER, f"encoded_{image_file.filename}")
+        encoded_filename = f"encoded_{image_file.filename}"
+        encoded_image_path = os.path.join(UPLOAD_FOLDER, encoded_filename)
         encoded_image.save(encoded_image_path, format=encoded_image.format, optimize=True)
 
+        # Generate download path
+        download_path = f"download/{encoded_filename}"
+
         # Prepare the response
-        data_result = EncodeResponse(imagePath=encoded_image_path)
+        data_result = {
+            "imagePath": encoded_image_path,
+            "downloadPath": download_path
+        }
         result = response(200, SUCCESS_CODE, "Successfully Encoded Image", data_result)
         return result
     except Exception as e:
