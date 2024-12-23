@@ -16,7 +16,7 @@ async def encode_text_in_image_route(
     text: str = Form(...),
     image_file: UploadFile = File(...)
 ):
-   try:
+    try:
         # Ensure the upload folder exists
         os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
@@ -24,7 +24,7 @@ async def encode_text_in_image_route(
         valid_image_formats = {"jpeg", "jpg", "png", "bmp", "gif"}
         file_extension = image_file.filename.split(".")[-1].lower()
         if file_extension not in valid_image_formats:
-            raise HTTPException("Format file tidak didukung. Silahkan upload file dengan format jpeg, jpg, png, bmp, atau gif.")
+            raise HTTPException(status_code=400, detail="Format file tidak didukung. Silahkan upload file dengan format jpeg, jpg, png, bmp, atau gif.")
 
         # Save the uploaded image file to UPLOAD_FOLDER
         image_path = os.path.join(UPLOAD_FOLDER, image_file.filename)
@@ -40,36 +40,34 @@ async def encode_text_in_image_route(
 
         # Prepare the response
         data_result = EncodeResponse(imagePath=encoded_image_path)
-      
-        result = response(200, SUCCESS_CODE, "Successfuly Encode Image", data_result)
+        result = response(200, SUCCESS_CODE, "Successfully Encoded Image", data_result)
         return result
-   except Exception as e:
-      result = response(500, FAILED_CODE, "Failed Encode Image", str(e))
-      return result
+    except Exception as e:
+        result = response(500, FAILED_CODE, "Failed to Encode Image", str(e))
+        return result
 
 @router.post("/decode")
 async def decode_text_from_image_route(image_file: UploadFile = File(...)):
-   try:
-      # Read the uploaded image file
-      image = Image.open(io.BytesIO(await image_file.read()))
+    try:
+        # Read the uploaded image file
+        image = Image.open(io.BytesIO(await image_file.read()))
 
-      # Decode text from the image
-      decoded_text = decode_text_from_image(image)
+        # Decode text from the image
+        decoded_text = decode_text_from_image(image)
         
-      data_result = DecodeResponse(decodedText=decoded_text)
-      result = response(200, SUCCESS_CODE, "Successfuly Decode Image", data_result)
-      return result
-   except Exception as e:
-      raise HTTPException(status_code=500, detail=str(e))
+        data_result = DecodeResponse(decodedText=decoded_text)
+        result = response(200, SUCCESS_CODE, "Successfully Decoded Image", data_result)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/get_file/{filename}")
 async def get_file(filename: str):
     file_path = os.path.join(UPLOAD_FOLDER, filename)
     if os.path.exists(file_path):
-        result = response(200, SUCCESS_CODE, "Successfuly Get File", file_path)
+        result = response(200, SUCCESS_CODE, "Successfully Retrieved File", file_path)
         return result
-    return response(404, FAILED_CODE, "File Not Found", "")
-
+    raise HTTPException(status_code=404, detail="File Not Found")
 
 @router.get("/download/{filename}")
 async def download_file(filename: str):
@@ -78,7 +76,7 @@ async def download_file(filename: str):
     
     # Check if the file exists
     if not os.path.exists(file_path):
-        raise response(404, FAILED_CODE, "File Not Found", "")
+        raise HTTPException(status_code=404, detail="File Not Found")
     
     # Return the file as a response for download
     return FileResponse(
